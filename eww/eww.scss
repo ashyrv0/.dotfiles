@@ -1,0 +1,311 @@
+/* Reset */
+* {
+  all: unset; // Unsets everything so you can style everything from scratch
+}
+
+/* ==============================
+   Global Styles
+   ============================== */
+.bar {
+  background-color: #0f0f17;
+  color: #b0b4bc;
+  padding: 10px;
+}
+
+.sidestuff slider {
+  all: unset;
+  color: #ffd5cd;
+  min-height: 4px;
+}
+
+.label-ram {
+  font-size: large;
+}
+
+tooltip.background {
+  background-color: #0f0f17;
+  font-size: 18px;
+  border-radius: 10px;
+  color: #b0b4bc;
+}
+
+tooltip label {
+  margin: 6px;
+}
+
+/* ==============================
+   Metric Styles
+   ============================== */
+.metric scale trough highlight {
+  all: unset;
+  background-color: #6e91b5;
+  color: #000000;
+  border-radius: 10px;
+}
+
+.metric scale trough {
+  all: unset;
+  background-color: #4e4e4e;
+  border-radius: 50px;
+  min-height: 3px;
+  min-width: 50px;
+  margin-left: 10px;
+  margin-right: 20px;
+}
+
+/* ==============================
+   Workspace Styles
+   ============================== */
+.workspaces button {
+  transition: all 0.3s ease;
+  font-size: 15px;
+  background-color: #0f0f17;
+  color: #b0b4bc;
+  padding: 0px 3px;
+  border-radius: 6px;
+  margin: 1px;
+}
+
+.workspaces button:hover {
+  color: #3e424f;
+}
+
+.workspace.active {
+  color: #b0b4bc;
+}
+
+/* ==============================
+   Time Button Styles
+   ============================== */
+.time-button {
+  color: #b0b4bc;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.time-button:hover {
+  background-color: #3a3a45;
+  color: #6e91b5;
+}
+
+/* ==============================
+   Calendar Popup Styles
+   ============================== */
+.cal-box {
+  background-color: #1a1a24;
+  border: 1px solid #3a3a45;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.cal-inner-box {
+  padding: 10px;
+}
+
+.cal {
+  background-color: #2a2a35;
+  color: #b0b4bc;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.cal:selected {
+  background-color: #6e91b5;
+  color: #0f0f17;
+}
+
+.cal.header {
+color: #a1bdce;
+font-weight: bold;
+}
+
+calendar.highlight {
+color: #a1bdce;
+font-weight: bold;
+}
+
+calendar:indeterminate {
+color: #b0b4bc;
+}
+
+/* ==============================
+   Music Controls
+   ============================== */
+.music_btn_prev, .music_btn_play, .music_btn_next {
+  font-family: Iosevka Nerd Font;
+}
+
+.music_btn_prev, .music_btn_next{
+  color: #b0b4bc;
+  font-size: 32px;
+  font-weight: normal;
+  margin: 0;
+}
+
+.music_btn_play {
+  color: #a1bdce;
+  font-size: 48px;
+  font-weight: normal;
+  margin: 0;
+}
+
+/* ==============================
+   Music Popup Styles
+   ============================== */
+.music-popup {
+  background-color: #1a1a24;
+  border: 1px solid #3a3a45;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.music_cover_art {
+  background-size: cover;
+  background-position: center;
+  min-height: 100px;
+  min-width: 170px;
+  margin: 20px;
+  border-radius: 20px;
+  box-shadow: 5px 5px 5px 5px #06060b;
+}
+
+/* Timeline */
+.timeline-container {
+  background: linear-gradient(135deg, rgba(35, 34, 50, 0.8) 0%, rgba(42, 42, 53, 0.8) 100%);
+  border-radius: 15px;
+  margin: -5px 5px 10px 0;
+  padding: 8px 12px;
+  box-shadow: 0 6px 5px 2px #06060b;
+}
+
+.music-progress scale trough {
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, 0.2);
+  min-height: 4px;
+}
+
+.music-progress scale highlight {
+  background-color: #ffffff;
+  border-radius: 6px;
+}
+
+/* Progress Bar */
+.music-progress {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  min-height: 6px;
+  margin: 5px 0;
+}
+
+.music-progress slider {
+  background-color: #ffffff;
+  border-radius: 50%;
+  min-height: 16px;
+  min-width: 16px;
+  margin: -5px 0;
+}
+
+.music-progress highlight {
+  background: linear-gradient(to right, #afcee0 30%, #a1bdce 50%, #77a5bf 100%);
+  border-radius: 24px;
+}
+
+/* Time Labels */
+.time-labels {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 2px;
+}
+
+.current-time, .total-time {
+  font-family: monospace;
+}
+
+/* Song Title */
+.popup-song-title, .popup-song-artist{
+  font-size: 16px;
+  font-weight: normal;
+  margin: 0;
+}
+
+/* ==============================
+   Power Menu Styles
+   ============================== */
+.powermenu {
+  padding: 0;
+  margin: 0;
+}
+
+.button-shutdown {
+  color: #F7768E;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin: 0 2px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.button-shutdown:hover {
+  background-color: #F7768E;
+  color: #0f0f17;
+}
+
+.button-sleep {
+  color: #a1bdce;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin: 0 2px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.button-sleep:hover {
+  background-color: #a1bdce;
+  color: #0f0f17;
+}
+
+.button-restart {
+  color: #73DACA;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin: 0 2px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.button-restart:hover {
+  background-color: #73DACA;
+  color: #0f0f17;
+}
+
+.button-logout {
+  color: #BB9AF7;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin: 0 2px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.button-logout:hover {
+  background-color: #BB9AF7;
+  color: #0f0f17;
+}
+
+.button-lock {
+  color: #7AA2F7;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin: 0 2px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.button-lock:hover {
+  background-color: #7AA2F7;
+  color: #0f0f17;
+}
