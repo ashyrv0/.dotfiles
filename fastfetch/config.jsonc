@@ -3,43 +3,44 @@
     "logo": {
         "source": "arch_small",
         "padding": {
-	        "top": 1,
-	        "left": 2
-	},
+            "top": 1,
+            "left": 2
+        }
     },
     "display": {
         "separator": "  "
     },
     "modules": [
-	"break",
-	"title",
+        "break",
+        "title",
         {
             "type": "os",
-            "key": "os    ",
+            "key": "os    "
         },
-        {   "type": "wm",
-            "key" : "de    ",
+        {
+            "type": "wm",
+            "key": "de    "
         },
         {
             "type": "packages",
             "format": "{} (pacman)",
-            "key": "pkgs  ", 
+            "key": "pkgs  "
         },
-        {   "type": "shell",
-            "key": "shell ",
+        {
+            "type": "shell",
+            "key": "shell "
         },
         {
             "type": "kernel",
-            "key": "kernel",
+            "key": "kernel"
         },
         {
             "type": "uptime",
-            "format": "{2}h {3}m",
-            "key": "uptime",
+            "key": "uptime"
         },
         {
             "type": "memory",
-            "key": "memory",
+            "key": "memory"
         },
         "break",
         {
