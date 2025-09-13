@@ -232,8 +232,8 @@
 (defwindow calendar
   :monitor 0
   :windowtype "dialog"
-  :geometry (geometry :x "10px"
-                      :y "45px"
+  :geometry (geometry :x "15px"
+                      :y "55px"
                       :width "270px"
                       :height "250px"
                       :anchor "top right")
