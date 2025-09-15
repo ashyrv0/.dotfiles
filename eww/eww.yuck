@@ -116,13 +116,13 @@
 (defwidget music-widget []
   (eventbox :onhover "eww update music_reveal=true"
             :onhoverlost "eww update music_reveal=false"
-    (box :orientation "h" :spacing 2 :class "music-container"
+    (box :orientation "h" :space-evenly false :class "music-container"
       (button :class "song" :onclick "~/.config/eww/scripts/popup music"
               (label :text song :limit-width 13 :show-truncated true))
       (revealer :transition "slideright" 
                 :reveal music_reveal 
                 :duration "350ms"
-        (box :orientation "h" :class "music-controls":width 110 :vexpand "false" :hexpand "false"
+        (box :orientation "h" :space-evenly false :vexpand "false" :hexpand "false" :spacing 10 :class "music-controls"
           (button :class "song_btn_prev" :onclick "playerctl previous" "❮")
           (button :class "song_btn_play" :onclick "playerctl play-pause" song_status)
           (button :class "song_btn_next" :onclick "playerctl next" "❯"))))))
