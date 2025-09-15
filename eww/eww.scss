@@ -55,22 +55,33 @@ tooltip label {
 /* ==============================
    Workspace Styles
    ============================== */
+/* base style */
 .workspaces button {
   transition: all 0.3s ease;
   font-size: 15px;
   background-color: #0f0f17;
-  color: #b0b4bc;
+  color: #555;
   padding: 0px 3px;
   border-radius: 6px;
   margin: 1px;
 }
 
-.workspaces button:hover {
-  color: #3e424f;
+/* active */
+.workspace.active {
+  color: #88c0d0;
+  font-weight: bold;
 }
 
-.workspace.active {
-  color: #b0b4bc;
+/* occupied but not active */
+.workspace.occupied {
+  color: #bfc9db;
+  font-weight: bold;
+}
+
+/* hover */
+.workspaces button:hover {
+  color: #88c0d0;
+  font-weight: bold;
 }
 
 /* ==============================
