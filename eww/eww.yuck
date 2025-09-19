@@ -2,15 +2,25 @@
 (defpoll volume :interval "1s" :initial "50"
   "amixer -D pulse sget Master | grep -o '[0-9]*%' | head -1 | tr -d '%' || echo '50'")
 
-(defpoll song_pos :interval "1s" :initial "0"
-  "playerctl position 2>/dev/null | cut -d. -f1 || echo '0'")
-
 ;; Poll music info
 (defpoll music :interval "1s" :initial "{}"
   "bash ~/.config/eww/scripts/music_info.sh")
 
 (defpoll artist :interval "2s" :initial ""
   "playerctl metadata artist 2>/dev/null || echo ''")
+
+;; Polls media length
+(defpoll song_pos :interval "1s" :initial "0"
+  "playerctl position 2>/dev/null | cut -d. -f1 || echo '0'")
+
+(defpoll song_position_time :interval "1s" :initial "0:00"
+  "bash ~/.config/eww/scripts/music_info.sh position_time")
+
+(defpoll song_length_time :interval "2s" :initial "0:00"
+  "bash ~/.config/eww/scripts/music_info.sh length_time")
+
+(defpoll song_length_seconds :interval "2s" :initial "100"
+  "bash ~/.config/eww/scripts/music_info.sh length_seconds")
 
 (defpoll hour :interval "1s" "date '+%H'")
 (defpoll min :interval "1s" "date '+%M'")
@@ -155,21 +165,21 @@
       ;; Timeline & times
       (box :orientation "v" :spacing 4 :class "timeline-container"
         (scale :min 0
-               :max {jq(music, ".length_seconds") ?: 100}
-               :value song_pos
-               :onchange "playerctl position {}"
-               :hexpand true
-               :class "music-progress"
-               :active true
-               :height 20
-               :width 300)
+       :max song_length_seconds
+       :value song_pos
+       :onchange "playerctl position {}"
+       :hexpand true
+       :class "music-progress"
+       :active true
+       :height 20
+       :width 300)
         (box :orientation "h" :space-evenly false :class "time-labels"
-          (label :text {jq(music, ".position") ?: "0:00"} 
-                 :class "current-time" 
-                 :halign "start")
-          (box :hexpand true)
-          (label :text {jq(music, ".length") ?: "0:00"} 
-                 :class "total-time" 
+  (label :text song_position_time
+         :class "current-time"
+         :halign "start")
+  (box :hexpand true)
+  (label :text song_length_time
+         :class "total-time"
                  :halign "end"))))))
 
 ;; Clock Widgets
