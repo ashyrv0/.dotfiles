@@ -82,16 +82,41 @@ if [[ $length -gt 0 ]]; then
     progress=$((position * 100 / length))
 fi
 
+# Format time values WITHOUT quotes for JSON
+formatted_position="$(format_time "$position")"
+formatted_length="$(format_time "$length")"
+
+
+# If called with time arguments, output time only
+if [[ "$1" == "position_time" ]]; then
+    position="$(playerctl position 2>/dev/null | awk '{printf("%d\n",$1)}' || echo 0)"
+    format_time "$position"
+    exit 0
+elif [[ "$1" == "length_time" ]]; then
+    raw_length="$(playerctl metadata mpris:length 2>/dev/null || echo 0)"
+    length=$((raw_length / 1000000))
+    format_time "$length"
+    exit 0
+fi
+
+# If called with length_seconds argument, output length in seconds only
+if [[ "$1" == "length_seconds" ]]; then
+    raw_length="$(playerctl metadata mpris:length 2>/dev/null || echo 0)"
+    length=$((raw_length / 1000000))
+    echo "$length"
+    exit 0
+fi
+
 # Clean the strings before JSON encoding
 clean_title="$(truncate_string "$title" $MAX_TITLE_LENGTH)"
 clean_artist="$(truncate_string "$artist" $MAX_ARTIST_LENGTH)"
 
-# Output JSON for Eww
+# Output JSON for Eww - NOTE: position and length are NOT quoted so they appear as raw text
 echo "{
 \"title\": \"$(escape_json "$clean_title")\",
 \"artist\": \"$(escape_json "$clean_artist")\",
-\"position\": \"$(format_time "$position")\",
-\"length\": \"$(format_time "$length")\",
+\"position\": $formatted_position,
+\"length\": $formatted_length,
 \"length_seconds\": $length,
 \"progress\": $progress,
 \"status\": \"$status\",
