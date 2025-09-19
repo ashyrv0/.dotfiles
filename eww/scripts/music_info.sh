@@ -48,10 +48,8 @@ handle_cover_art() {
     local TMP_COVER_PATH="$TMP_DIR/cover.png"
     local TMP_TEMP_PATH="$TMP_DIR/temp.png"
     [[ ! -d "$TMP_DIR" ]] && mkdir -p "$TMP_DIR"
-    
     local ART_FROM_SPOTIFY="$(playerctl -p %any,spotify metadata mpris:artUrl 2>/dev/null | sed -e 's/open.spotify.com/i.scdn.co/g')"
     local ART_FROM_BROWSER="$(playerctl -p %any,mpd,firefox,chromium,brave metadata mpris:artUrl 2>/dev/null | sed -e 's/file:\/\///g')"
-    
     if [[ -n "$ART_FROM_SPOTIFY" ]]; then
         curl -s --max-time "$CURL_TIMEOUT" "$ART_FROM_SPOTIFY" --output "$TMP_TEMP_PATH" 2>/dev/null && cp "$TMP_TEMP_PATH" "$TMP_COVER_PATH"
     elif [[ -n "$ART_FROM_BROWSER" ]] && [[ -f "$ART_FROM_BROWSER" ]]; then
@@ -64,6 +62,28 @@ handle_cover_art() {
 # If called with "cover" argument, output cover path only
 if [[ "$1" == "cover" ]]; then
     handle_cover_art
+    exit 0
+fi
+
+# If called with time arguments, output time only
+if [[ "$1" == "position_time" ]]; then
+    position="$(playerctl position 2>/dev/null | awk '{printf("%d\n",$1)}' || echo 0)"
+    format_time "$position"
+    exit 0
+fi
+
+if [[ "$1" == "length_time" ]]; then  # Fixed: changed from elif to if
+    raw_length="$(playerctl metadata mpris:length 2>/dev/null || echo 0)"
+    length=$((raw_length / 1000000))
+    format_time "$length"
+    exit 0
+fi
+
+# If called with length_seconds argument, output length in seconds only
+if [[ "$1" == "length_seconds" ]]; then
+    raw_length="$(playerctl metadata mpris:length 2>/dev/null || echo 0)"
+    length=$((raw_length / 1000000))
+    echo "$length"
     exit 0
 fi
 
@@ -85,27 +105,6 @@ fi
 # Format time values WITHOUT quotes for JSON
 formatted_position="$(format_time "$position")"
 formatted_length="$(format_time "$length")"
-
-
-# If called with time arguments, output time only
-if [[ "$1" == "position_time" ]]; then
-    position="$(playerctl position 2>/dev/null | awk '{printf("%d\n",$1)}' || echo 0)"
-    format_time "$position"
-    exit 0
-elif [[ "$1" == "length_time" ]]; then
-    raw_length="$(playerctl metadata mpris:length 2>/dev/null || echo 0)"
-    length=$((raw_length / 1000000))
-    format_time "$length"
-    exit 0
-fi
-
-# If called with length_seconds argument, output length in seconds only
-if [[ "$1" == "length_seconds" ]]; then
-    raw_length="$(playerctl metadata mpris:length 2>/dev/null || echo 0)"
-    length=$((raw_length / 1000000))
-    echo "$length"
-    exit 0
-fi
 
 # Clean the strings before JSON encoding
 clean_title="$(truncate_string "$title" $MAX_TITLE_LENGTH)"
