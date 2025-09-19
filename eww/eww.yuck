@@ -11,10 +11,10 @@
 
 ;; Polls media length
 (defpoll song_pos :interval "1s" :initial "0"
-  "playerctl position 2>/dev/null | cut -d. -f1 || echo '0'")
+  "bash -c 'STATUS=$(playerctl status 2>/dev/null); CACHE_FILE=\"$HOME/.cache/eww/last_pos\"; if [[ \"$STATUS\" == \"Playing\" ]]; then POS=$(playerctl position 2>/dev/null | cut -d. -f1 || echo 0); echo \"$POS\" > \"$CACHE_FILE\"; echo \"$POS\"; elif [[ \"$STATUS\" == \"Paused\" && -f \"$CACHE_FILE\" ]]; then cat \"$CACHE_FILE\" 2>/dev/null || echo 0; else echo 0; fi'")
 
 (defpoll song_position_time :interval "1s" :initial "0:00"
-  "bash ~/.config/eww/scripts/music_info.sh position_time")
+  "bash -c 'STATUS=$(playerctl status 2>/dev/null); CACHE_FILE=\"$HOME/.cache/eww/last_time\"; if [[ \"$STATUS\" == \"Playing\" ]]; then TIME=$(bash ~/.config/eww/scripts/music_info.sh position_time); echo \"$TIME\" > \"$CACHE_FILE\"; echo \"$TIME\"; elif [[ \"$STATUS\" == \"Paused\" && -f \"$CACHE_FILE\" ]]; then cat \"$CACHE_FILE\" 2>/dev/null || echo \"0:00\"; else echo \"0:00\"; fi'")
 
 (defpoll song_length_time :interval "2s" :initial "0:00"
   "bash ~/.config/eww/scripts/music_info.sh length_time")
