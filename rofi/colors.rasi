@@ -1,0 +1,41 @@
+* {
+    /* Base colors*/
+    background:                  #0b1119;
+    surface:                     #1a2332;
+    foreground:                  #b5c7d8;
+    accent:                      #6e91b5;
+    
+    /* Derived from base colors */
+    background-color:            @background;
+    border-color:                @accent;
+    
+    /* Normal state */
+    normal-background:           @background;
+    normal-foreground:           @foreground;
+    
+    /* Selected state - uses accent */
+    selected-normal-background:  @accent;
+    selected-normal-foreground:  @background;
+    
+    /* Alternate */
+    alternate-normal-background: @background;
+    alternate-normal-foreground: @foreground;
+    
+    /* Active state */
+    active-background:           @surface;
+    active-foreground:           @accent;
+    selected-active-background:  @accent;
+    selected-active-foreground:  @background;
+    alternate-active-background: @surface;
+    alternate-active-foreground: @accent;
+    
+    /* Urgent/Error state */
+    urgent-background:           #465B72;
+    urgent-foreground:           @foreground;
+    selected-urgent-background:  #465B72;
+    selected-urgent-foreground:  @foreground;
+    alternate-urgent-background: @background;
+    alternate-urgent-foreground: @foreground;
+    
+    spacing:                     2;
+}

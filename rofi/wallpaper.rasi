@@ -1,0 +1,70 @@
+* {
+    background-color: #0b1119;
+    color: #b5c7d8;
+    border-color: #6e91b5;
+}
+
+window {
+    width: 50%;
+    padding: 15px;
+    border: 2px;
+    border-radius: 10px;
+    background-color: rgba(11, 17, 25, 0.85);
+}
+
+mainbox {
+    children: [inputbar, listview];
+    spacing: 15px;
+}
+
+inputbar {
+    padding: 5px;
+    border-radius: 5px;
+    background-color: rgba(26, 35, 50, 0.9);
+    children: [prompt, entry];
+}
+
+prompt {
+    padding: 5px 10px;
+}
+
+entry {
+    padding: 5px;
+    background-color: transparent;
+}
+
+listview {
+    columns: 3;
+    lines: 2;
+    spacing: 15px;
+    cycle: false;
+    layout: vertical;
+    fixed-height: true;
+    fixed-columns: true;
+}
+
+element {
+    orientation: vertical;
+    padding: 10px;
+    border-radius: 8px;
+    spacing: 8px;
+    background-color: transparent;
+}
+
+element selected {
+    background-color: #6e91b5;
+    color: #0b1119;
+}
+
+element-icon {
+    size: 320px;
+    border-radius: 5px;
+    background-color: transparent;
+}
+
+element-text {
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    padding: 5px 10px;
+    background-color: transparent;
+}

@@ -1,0 +1,61 @@
+#!/bin/bash
+
+CAL_LOCK="$HOME/.cache/eww-calendar.lock"
+MUSIC_LOCK="$HOME/.cache/eww-music.lock"
+POWER_LOCK="$HOME/.cache/eww-powermenu.lock"
+
+start_daemon() {
+    if ! pgrep -x eww >/dev/null; then
+        eww daemon
+        sleep 1
+    fi
+}
+
+calendar() {
+    start_daemon
+    if [ -f "$CAL_LOCK" ]; then
+        eww close calendar 2>/dev/null
+        rm -f "$CAL_LOCK"
+        echo "Calendar closed"
+    else
+        eww open calendar 2>/dev/null
+        touch "$CAL_LOCK"
+        echo "Calendar opened"
+    fi
+}
+
+music() {
+    start_daemon
+    if [ -f "$MUSIC_LOCK" ]; then
+        eww close music_popup 2>/dev/null
+        rm -f "$MUSIC_LOCK"
+        echo "Music popup closed"
+    else
+        eww open music_popup 2>/dev/null
+        touch "$MUSIC_LOCK"
+        echo "Music popup opened"
+    fi
+}
+
+powermenu() {
+    start_daemon
+    if [ -f "$POWER_LOCK" ]; then
+        eww close powermenu 2>/dev/null
+        rm -f "$POWER_LOCK"
+        echo "Power menu closed"
+    else
+        eww open powermenu 2>/dev/null
+        touch "$POWER_LOCK"
+        echo "Power menu opened"
+    fi
+}
+
+case "$1" in
+    launcher) $HOME/.local/bin/launcher ;;
+    wifi) kitty -e nmtui ;;
+    audio) pavucontrol ;;
+    calendar) calendar ;;
+    music) music ;;
+    powermenu) powermenu ;;
+    *) echo "Usage: $0 {launcher|wifi|audio|calendar|music|powermenu}" ;;
+esac

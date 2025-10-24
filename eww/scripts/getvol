@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Get mute status and volume
+if command -v pamixer &>/dev/null; then
+    IS_MUTED=$(pamixer --get-mute)
+    VOLUME=$(pamixer --get-volume)
+else
+    # For amixer
+    MUTE_CHECK=$(amixer -D pulse sget Master | grep -o '\[on\]\|\[off\]' | head -1)
+    if [[ "$MUTE_CHECK" == "[off]" ]]; then
+        IS_MUTED="true"
+    else
+        IS_MUTED="false"
+    fi
+    VOLUME=$(amixer -D pulse sget Master | awk -F '[^0-9]+' '/Left:/{print $3}')
+fi
+
+# Determine icon based on mute status and volume level
+if [[ "$IS_MUTED" == "true" ]]; then
+    ICON="🔇"
+elif [[ $VOLUME -eq 0 ]]; then
+    ICON="🔇"
+elif [[ $VOLUME -le 33 ]]; then
+    ICON="🔈"
+elif [[ $VOLUME -le 66 ]]; then
+    ICON="🔉"
+else
+    ICON="🔊"
+fi
+
+# Output based on argument
+case "$1" in
+    "icon")
+        echo "$ICON"
+        ;;
+    "volume")
+        echo "$VOLUME"
+        ;;
+    *)
+        # Default: output volume number
+        echo "$VOLUME"
+        ;;
+esac

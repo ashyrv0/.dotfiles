@@ -1,0 +1,253 @@
+;; Poll definitions
+(defpoll volume :interval "1s" :initial "50"
+  "bash ~/.config/eww/scripts/getvol volume")
+
+(defpoll volume_icon :interval "1s" :initial "🔊"
+  "bash ~/.config/eww/scripts/getvol icon")
+
+;; Poll Music Info
+(defpoll song :interval "2s" :initial "No song"
+  "playerctl metadata title 2>/dev/null || echo 'No song'")
+
+(defpoll song_status :interval "2s" :initial "󰏤"
+  "playerctl status 2>/dev/null | sed 's/Playing/󰏤/g; s/Paused//g' || echo '⏸ '")
+
+(defpoll cover_art :interval "2s" :initial ""
+  "bash ~/.config/eww/scripts/music_info.sh cover")
+
+(defpoll song_pos :interval "1s" :initial "0"
+  "playerctl position 2>/dev/null | cut -d. -f1 || echo '0'")
+
+(defpoll music :interval "1s" :initial "{}"
+  "bash ~/.config/eww/scripts/music_info.sh")
+
+(defpoll artist :interval "2s" :initial ""
+  "playerctl metadata artist 2>/dev/null || echo ''")
+
+;; Poll Time and Date
+(defpoll hour :interval "1s" "date '+%H'")
+(defpoll min :interval "1s" "date '+%M'")
+
+(defpoll time :interval "10s"
+  "date '+%H:%M %b %d, %Y'")
+
+(defpoll calendar_day :interval "10h"
+    "date '+%d'")
+(defpoll calendar_month :interval "10h"
+    "scripts/calendar.sh")
+(defpoll calendar_year :interval "10h"
+    "date '+%Y'")
+
+;; Workspace switcher
+(defpoll current_workspace :interval "500ms" :initial "1"
+  "hyprctl activeworkspace -j | jq -r '.id' 2>/dev/null || hyprctl activeworkspace | grep 'workspace ID' | awk '{print $3}'")
+
+(defpoll workspaces_list :interval "500ms" :initial "[1,2,3,4,5]"
+  "hyprctl workspaces -j | jq '[.[].id] | sort' 2>/dev/null || echo '[1,2,3,4,5,6]'")
+
+(defpoll occupied_workspaces :interval "500ms" :initial "[]"
+  "hyprctl workspaces -j | jq '[.[].id] | sort' 2>/dev/null || echo '[]'")
+
+;; Variables
+(defvar music_reveal false)
+(defvar power false)
+
+;; Main bar widget
+(defwidget bar []
+  (centerbox :orientation "h"
+    (workspaces)
+    (music-widget)
+    (sidestuff)))
+
+(defwidget sidestuff []
+  (box :class "sidestuff" :orientation "h" :space-evenly false :halign "end"
+    (metric :label volume_icon
+            :value volume
+            :tooltip "${volume}%"
+             :onchange "amixer -D pulse sset Master {}%")
+    (metric :label "💾"
+            :value {round(EWW_RAM.used_mem_perc, 2)}
+            :tooltip "${round(EWW_RAM.used_mem_perc, 2)}% RAM used"
+            :onchange "")
+    (metric :label "💰"
+            :value {round((1 - (EWW_DISK["/"].free / EWW_DISK["/"].total)) * 100, 0)}
+            :tooltip "${round((1 - (EWW_DISK["/"].free / EWW_DISK["/"].total)) * 100, 0)}% disk used"
+            :onchange "")
+    (time-single)
+    (power-button)))
+
+(defwidget power-button []
+  (eventbox :onhover "eww update power=true"
+            :onhoverlost "eww update power=false"
+    (box :orientation "h"
+         :space-evenly false
+         :class "powermenu"
+      (revealer :transition "slideleft"
+                :reveal power
+                :duration "350ms"
+        (box :orientation "h"
+             :space-evenly false
+             :spacing 4
+          (button :class "button-sleep"
+                  :tooltip "Sleep"
+                  :onclick "systemctl suspend" "⏾")
+          (button :class "button-restart"
+                  :tooltip "Restart"
+                  :onclick "systemctl reboot" "↻")
+          (button :class "button-logout"
+                  :tooltip "Logout"
+                  :onclick "hyprctl dispatch exit || swaymsg exit || i3-msg exit" "󰍃")
+          (button :class "button-lock"
+                  :tooltip "Lock Screen"
+                  :onclick "hyprlock || swaylock || i3lock -c 000000" "")))
+      (button :class "button-shutdown"
+              :tooltip "Shutdown"
+              :onclick "systemctl poweroff" "⏻"))))
+
+(defwidget workspaces []
+  (box :class "workspaces"
+       :orientation "h"
+       :space-evenly true
+       :halign "start"
+       :spacing 10
+    (for workspace in "[1,2,3,4,5,6]"
+      (button :class {current_workspace == workspace ? "workspace active" : 
+                     (arraylength(jq(occupied_workspaces, "map(select(. == ${workspace}))")) > 0 ? "workspace occupied" : "workspace empty")}
+              :onclick "hyprctl dispatch workspace ${workspace}" 
+              :tooltip "Workspace ${workspace}"
+              {current_workspace == workspace ? "●" : "○"}))))
+
+;; Music Controls
+(defwidget music-widget []
+  (eventbox :onhover "eww update music_reveal=true"
+            :onhoverlost "eww update music_reveal=false"
+    (box :orientation "h" :space-evenly false :class "music-container"
+      (button :class "song" :onclick "~/.config/eww/scripts/popup music"
+              (label :text song :limit-width 13 :show-truncated true))
+      (revealer :transition "slideright" 
+                :reveal music_reveal 
+                :duration "350ms"
+        (box :orientation "h" :space-evenly false :vexpand "false" :hexpand "false" :spacing 10 :class "music-controls"
+          (button :class "song_btn_prev" :onclick "playerctl previous" "❮")
+          (button :class "song_btn_play" :onclick "playerctl play-pause" song_status)
+          (button :class "song_btn_next" :onclick "playerctl next" "❯"))))))
+
+;; Music popup
+(defwidget music-popup []
+  (box :orientation "h" :spacing 15 :class "music-popup" :space-evenly false
+    ;; Cover art
+    (box :class "music_cover_art" :vexpand false :hexpand false
+      :style "background-image: url('${cover_art}'); min-width: 200px; min-height: 200px; background-size: cover; background-position: center; border-radius: 6px;")
+    ;; Song info & controls
+    (box :orientation "v" :spacing 8 :hexpand true
+      ;; Title & artist
+      (box :orientation "v" :spacing 2
+        (label :text {song != "" ? song : "No music"}
+               :limit-width 25
+               :show-truncated true
+               :class "popup-song-title"
+               :halign "center")
+        (label :text {artist != "" ? artist : ""}
+               :limit-width 15
+               :show-truncated true
+               :class "popup-song-artist"
+               :halign "center"))
+      ;; Controls
+      (centerbox :orientation "h" :class "popup-controls"
+        (button :onclick "playerctl previous" :class "music_btn_prev" "❮")
+        (button :onclick "playerctl play-pause" :class "music_btn_play" song_status)
+        (button :onclick "playerctl next" :class "music_btn_next" "❯"))
+      ;; Timeline & times
+      (box :orientation "v" :spacing 4 :class "timeline-container"
+        (scale :min 0
+               :max {jq(music, ".length_seconds") ?: 100}
+               :value song_pos
+               :onchange "playerctl position {}"
+               :hexpand true
+               :class "music-progress"
+               :active true
+               :height 20
+               :width 300)
+        (box :orientation "h" :space-evenly false :class "time-labels"
+          (label :text {replace(jq(music, ".position") ?: "0:00", "\"", "")} 
+                 :class "current-time" 
+                 :halign "start")
+          (box :hexpand true)
+          (label :text {replace(jq(music, ".length") ?: "0:00", "\"", "")} 
+                 :class "total-time" 
+                 :halign "end"))))))
+
+;; Clock Widgets
+(defwidget time []
+  (box :orientation "v" 
+       :class "time" 
+       :valign "end"
+    (button :onclick "~/.config/eww/scripts/popup calendar"	
+            :class "time-hour" hour)
+    (button :onclick "~/.config/eww/scripts/popup calendar"	
+            :class "time-min" min)))
+
+(defwidget time-single []
+  (button :onclick "~/.config/eww/scripts/popup calendar"
+          :class "time-button"
+          time))
+
+;; Calendar Widgets
+(defwidget cal []
+  (box :class "cal-box"
+       :orientation "v"
+       (box :class "cal-inner-box"
+            (calendar :class "cal"
+                      :day calendar_day
+                      :month calendar_month
+                      :year calendar_year))))
+
+(defwidget metric [label value onchange tooltip]
+  (eventbox :tooltip tooltip
+    (box :orientation "h"
+         :class "metric"
+         :space-evenly false
+      (box :class "label" label)
+      (scale :min 0
+             :max 101
+             :active {onchange != ""}
+             :value value
+             :onchange onchange))))
+
+;; Windows
+(defwindow bar
+  :monitor 0
+  :windowtype "dock"
+  :geometry (geometry :x "0%"
+                      :y "0%"
+                      :width "100%"
+                      :height "24px"
+                      :anchor "top center")
+  :reserve (struts :side "top" :distance "24px")
+  (bar))
+
+;; Music Popup Window
+(defwindow music_popup
+  :monitor 0
+  :windowtype "dialog"
+  :geometry (geometry :x "50%"
+                      :y "55px"
+                      :width "450px"
+                      :height "130px"
+                      :anchor "top center")
+  :stacking "fg"
+  :exclusive false
+  (music-popup))
+
+;; Calendar Window
+(defwindow calendar
+  :monitor 0
+  :windowtype "dialog"
+  :geometry (geometry :x "15px"
+                      :y "55px"
+                      :width "270px"
+                      :height "250px"
+                      :anchor "top right")
+  :stacking "fg"
+  :exclusive false
+  (cal))
