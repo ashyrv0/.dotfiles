@@ -50,8 +50,13 @@ tooltip label {
   min-width: 50px;
   margin-left: 10px;
   margin-right: 20px;
+  }
+  
+.metric .label {
+  font-size: 22px;
+  padding: 0;
+  margin: 0;
 }
-
 /* ==============================
    Workspace Styles
    ============================== */
@@ -246,7 +251,8 @@ calendar:indeterminate {
   border-radius: 6px;
   margin: 0 2px;
   transition: all 0.3s ease;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: bold;
 }
 
 .button-shutdown:hover {
