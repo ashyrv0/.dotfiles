@@ -17,15 +17,15 @@ fi
 
 # Determine icon based on mute status and volume level
 if [[ "$IS_MUTED" == "true" ]]; then
-    ICON="🔇"
+    ICON=""
 elif [[ $VOLUME -eq 0 ]]; then
-    ICON="🔇"
+    ICON=""
 elif [[ $VOLUME -le 33 ]]; then
-    ICON="🔈"
+    ICON=""
 elif [[ $VOLUME -le 66 ]]; then
-    ICON="🔉"
+    ICON=""
 else
-    ICON="🔊"
+    ICON=""
 fi
 
 # Output based on argument
