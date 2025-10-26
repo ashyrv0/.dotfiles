@@ -1,4 +1,6 @@
-# .dotfiles
+# Hyprland .Dotfiles
+This repository contains my personal [Hyprland](https://github.com/hyprwm/Hyprland) dotfiles.
+<img width="3841" height="2161" alt="screenshot" src="https://github.com/user-attachments/assets/4a9a3def-67b3-48de-83a4-80e59e188117" />
 
 ## Dependencies
 
@@ -23,7 +25,10 @@ Fonts:
 
 * JetBrainsMono Nerd Font
 * Iosevka Nerd Font Mono
-* [Nerd Fonts](https://www.nerdfonts.com/font-downloads)
+* You can find the fonts here: [Nerd Fonts](https://www.nerdfonts.com/font-downloads)
+
+### Setup/Installation
+As of right now I don't have a .sh script, so you just have to move the files to the location of your configs.
 
 ## Notes
 
