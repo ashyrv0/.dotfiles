@@ -1,17 +1,16 @@
 #!/bin/bash
 # Configuration
-MAX_TITLE_LENGTH=25
-MAX_ARTIST_LENGTH=15
-CURL_TIMEOUT=5
+MAX_TITLE_LENGTH=26
+MAX_ARTIST_LENGTH=16
+CURL_TIMEOUT=6
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEFAULT_COVER="$SCRIPT_DIR/Images/DEFAULT_COVER.png"
 CACHE_DIR="$HOME/.cache/eww/music-widget"
 mkdir -p "$CACHE_DIR"
 
 # Format seconds to MM:SS or HH:MM:SS
 format_time() {
     local seconds=$1
-    if [[ -z "$seconds" || "$seconds" == "null" || "$seconds" == "0.0" ]]; then
+    if [[ -z "$seconds" || "$seconds" == "null" || "$seconds" == "0" ]]; then
         echo "0:00"
         return
     fi
@@ -51,9 +50,9 @@ handle_cover_art() {
     # Check if playerctl is actually returning valid metadata
     local cover_url="$(playerctl metadata mpris:artUrl 2>/dev/null)"
     
-    # If no cover URL, return default
+    # If no cover URL, return empty
     if [[ -z "$cover_url" ]]; then
-        echo "file://$DEFAULT_COVER"
+        echo ""
         return
     fi
     
@@ -64,7 +63,7 @@ handle_cover_art() {
             echo "file://$local_path"
             return
         else
-            echo "file://$DEFAULT_COVER"
+            echo ""
             return
         fi
     fi
@@ -74,7 +73,7 @@ handle_cover_art() {
     
     # Get file extension from URL
     local extension="${cover_url##*.}"
-    if [[ "$extension" == "$cover_url" ]] || [[ ${#extension} -gt 5 ]]; then
+    if [[ "$extension" == "$cover_url" ]] || [[ ${#extension} -gt 4 ]]; then
         extension="jpg"
     fi
     
@@ -83,7 +82,6 @@ handle_cover_art() {
     # If not cached, download it
     if [[ ! -f "$cached_cover" ]]; then
         if curl -s -L --max-time "$CURL_TIMEOUT" "$cover_url" -o "$cached_cover" 2>/dev/null; then
-            # Verify it's a valid image
             if [[ -s "$cached_cover" ]] && file "$cached_cover" 2>/dev/null | grep -qE 'image|jpeg|png|jpg|gif'; then
                 echo "file://$cached_cover"
                 return
@@ -94,13 +92,10 @@ handle_cover_art() {
             rm -f "$cached_cover"
         fi
     else
-        # Use cached version
         echo "file://$cached_cover"
         return
     fi
-    
-    # Fallback to default
-    echo "file://$DEFAULT_COVER"
+    echo ""
 }
 
 # If called with "cover" argument, output cover path only
@@ -110,7 +105,6 @@ if [[ "$1" == "cover" ]]; then
 fi
 
 # Get metadata
-# First, get the active player name to track when it changes
 active_player="$(playerctl -l 2>/dev/null | head -n1)"
 player_cache_file="$CACHE_DIR/active_player"
 previous_player=""
@@ -136,8 +130,7 @@ position="$(playerctl position 2>/dev/null | awk '{printf("%d\n",$1)}' || echo 0
 
 # If player changed, force position refresh by not using any cached value
 if [[ "$active_player" != "$previous_player" ]] && [[ -n "$previous_player" ]]; then
-    # Player changed, get fresh position
-    sleep 0.1  # Small delay to ensure playerctl gets updated state
+    sleep 0.1
     position="$(playerctl position 2>/dev/null | awk '{printf("%d\n",$1)}' || echo 0)"
 fi
 
