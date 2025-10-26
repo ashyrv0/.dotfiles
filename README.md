@@ -27,7 +27,7 @@ Fonts:
 * Iosevka Nerd Font Mono
 * You can find the fonts here: [Nerd Fonts](https://www.nerdfonts.com/font-downloads)
 
-### Setup/Installation
+## Setup/Installation
 As of right now I don't have a .sh script, so you just have to move the files to the location of your configs.
 
 ## Notes
