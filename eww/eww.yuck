@@ -2,7 +2,7 @@
 (defpoll volume :interval "1s" :initial "50"
   "bash ~/.config/eww/scripts/getvol volume")
 
-(defpoll volume_icon :interval "1s" :initial "🔊"
+(defpoll volume_icon :interval "1s" :initial ""
   "bash ~/.config/eww/scripts/getvol icon")
 
 ;; Poll Music Info
@@ -10,7 +10,7 @@
   "playerctl metadata title 2>/dev/null || echo 'No song'")
 
 (defpoll song_status :interval "2s" :initial "󰏤"
-  "playerctl status 2>/dev/null | sed 's/Playing/󰏤/g; s/Paused//g' || echo '⏸ '")
+  "playerctl status 2>/dev/null | sed 's/Playing/󰏤/g; s/Paused/󰐊/g' || echo '⏸ '")
 
 (defpoll cover_art :interval "2s" :initial ""
   "bash ~/.config/eww/scripts/music_info.sh cover")
@@ -64,7 +64,7 @@
     (metric :label volume_icon
             :value volume
             :tooltip "${volume}%"
-             :onchange "amixer -D pulse sset Master {}%")
+            :onchange "amixer -D default sset Master {}%")
     (metric :label "󰍛"
             :value {round(EWW_RAM.used_mem_perc, 2)}
             :tooltip "${round(EWW_RAM.used_mem_perc, 2)}% RAM used"
@@ -99,7 +99,7 @@
                   :onclick "hyprctl dispatch exit || swaymsg exit || i3-msg exit" "󰍃")
           (button :class "button-lock"
                   :tooltip "Lock Screen"
-                  :onclick "hyprlock || swaylock || i3lock -c 000000" "")))
+                  :onclick "hyprlock || swaylock || i3lock -c 000000" "")))
       (button :class "button-shutdown"
               :tooltip "Shutdown"
               :onclick "systemctl poweroff" "⏻"))))
@@ -115,7 +115,7 @@
                      (arraylength(jq(occupied_workspaces, "map(select(. == ${workspace}))")) > 0 ? "workspace occupied" : "workspace empty")}
               :onclick "hyprctl dispatch workspace ${workspace}" 
               :tooltip "Workspace ${workspace}"
-              {current_workspace == workspace ? "●" : "○"}))))
+              {current_workspace == workspace ? "●" : "○}))))
 
 ;; Music Controls
 (defwidget music-widget []
@@ -251,4 +251,3 @@
   :stacking "fg"
   :exclusive false
   (cal))
-
