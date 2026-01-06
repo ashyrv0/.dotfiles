@@ -14,30 +14,45 @@ vim.g.mapleader = " "
 vim.opt.rtp:prepend("~/.local/share/nvim/lazy/lazy.nvim")
 
 require("lazy").setup({
+    -- Colorscheme
     { "folke/tokyonight.nvim", lazy = false, priority = 1000, opts = {} },
+
+    -- NvimTree
     { "nvim-tree/nvim-tree.lua", dependencies = { "nvim-tree/nvim-web-devicons" } },
+
+    -- Lualine
     { "nvim-lualine/lualine.nvim", dependencies = { "nvim-tree/nvim-web-devicons" } },
+
+    -- Telescope
     { "nvim-telescope/telescope.nvim", tag = "0.1.8", dependencies = { "nvim-lua/plenary.nvim" } },
-    { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+
+    -- Treesitter (load immediately and setup safely)
+    {
+        "nvim-treesitter/nvim-treesitter",
+        build = ":TSUpdate",
+        lazy = false,
+        config = function()
+            require("nvim-treesitter.configs").setup({
+                ensure_installed = { "lua", "vim", "python", "javascript", "typescript", "html", "css", "json" },
+                highlight = { enable = true },
+                indent = { enable = true },
+            })
+        end,
+    },
+
+    -- Alpha Dashboard
     { "goolord/alpha-nvim", dependencies = { "nvim-tree/nvim-web-devicons" } },
 })
 
 -- Setup nvim-tree
 require("nvim-tree").setup()
 
--- Setup telescope with keymaps
+-- Setup telescope keymaps
 local builtin = require("telescope.builtin")
 vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Telescope find files" })
 vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Telescope live grep" })
 vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Telescope buffers" })
 vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Telescope help tags" })
-
--- Setup Treesitter
-require("nvim-treesitter.configs").setup({
-    ensure_installed = { "lua", "vim", "python", "javascript", "typescript", "html", "css", "json" },
-    highlight = { enable = true },
-    indent = { enable = true },
-})
 
 -- Setup Lualine
 require("lualine").setup({
@@ -89,5 +104,4 @@ vim.cmd[[colorscheme tokyonight]]
 
 -- Keymaps
 vim.keymap.set("n", "<leader>\\", ":NvimTreeToggle<CR>", { noremap = true, silent = true })
-
 

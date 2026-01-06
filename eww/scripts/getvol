@@ -3,28 +3,42 @@
 # Get amixer info once
 AMIXER_OUTPUT=$(amixer -D default sget Master 2>/dev/null)
 
-# Get mute status
-if echo "$AMIXER_OUTPUT" | grep -q '\[off\]'; then
-    IS_MUTED="true"
+# Check if amixer command succeeded
+if [ $? -ne 0 ]; then
+    # Fallback to pulseaudio/pipewire
+    if command -v pactl >/dev/null 2>&1; then
+        VOLUME=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | grep -oP '\d+%' | head -1 | tr -d '%')
+        IS_MUTED=$(pactl get-sink-mute @DEFAULT_SINK@ 2>/dev/null | grep -q 'yes' && echo "true" || echo "false")
+    else
+        VOLUME=0
+        IS_MUTED="false"
+    fi
 else
-    IS_MUTED="false"
+    # Get mute status from amixer
+    if echo "$AMIXER_OUTPUT" | grep -q '\[off\]'; then
+        IS_MUTED="true"
+    else
+        IS_MUTED="false"
+    fi
+
+    # Get volume from amixer
+    VOLUME=$(echo "$AMIXER_OUTPUT" | grep -oP '\[\K\d+(?=%\])' | head -1)
 fi
 
-# Get volume
-VOLUME=$(echo "$AMIXER_OUTPUT" | grep -oP '\[\K\d+(?=%\])' | head -1)
+# Ensure volume has a value
 VOLUME=${VOLUME:-0}
 
-# Determine icon
+# Determine icon (using proper Unicode characters)
 if [[ "$IS_MUTED" == "true" ]]; then
-    ICON=""
+    ICON="󰖁"  # Muted icon
 elif [[ $VOLUME -eq 0 ]]; then
-    ICON=""
+    ICON="󰕿"  # Volume zero
 elif [[ $VOLUME -le 33 ]]; then
-    ICON=""
+    ICON="󰖀"  # Volume low
 elif [[ $VOLUME -le 66 ]]; then
-    ICON=""
+    ICON="󰕾"  # Volume medium
 else
-    ICON=""
+    ICON="󰕾"  # Volume high
 fi
 
 # Output requested argument

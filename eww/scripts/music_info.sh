@@ -7,6 +7,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CACHE_DIR="$HOME/.cache/eww/music-widget"
 mkdir -p "$CACHE_DIR"
 
+# Clean old covers (keep last 20 to prevent disk bloat)
+find "$CACHE_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.gif" \) -printf '%T@ %p\n' 2>/dev/null | 
+  sort -rn | tail -n +21 | cut -d' ' -f2- | xargs -r rm 2>/dev/null
+
 # Format seconds to MM:SS or HH:MM:SS
 format_time() {
     local seconds=$1
@@ -47,10 +51,8 @@ truncate_string() {
 
 # Handle cover art
 handle_cover_art() {
-    # Check if playerctl is actually returning valid metadata
     local cover_url="$(playerctl metadata mpris:artUrl 2>/dev/null)"
     
-    # If no cover URL, return empty
     if [[ -z "$cover_url" ]]; then
         echo ""
         return
@@ -70,8 +72,6 @@ handle_cover_art() {
     
     # For web URLs, hash the URL for caching
     local url_hash=$(echo -n "$cover_url" | md5sum | awk '{print $1}')
-    
-    # Get file extension from URL
     local extension="${cover_url##*.}"
     if [[ "$extension" == "$cover_url" ]] || [[ ${#extension} -gt 4 ]]; then
         extension="jpg"
@@ -98,41 +98,56 @@ handle_cover_art() {
     echo ""
 }
 
+# Check if any player is available and active
+if ! command -v playerctl >/dev/null 2>&1; then
+    echo '{"title":"No playerctl","artist":"","position":"0:00","position_seconds":0,"length":"0:00","length_seconds":0,"progress":0,"status":"⏸","cover":""}'
+    exit 0
+fi
+
+# Get list of active players
+active_players="$(playerctl -l 2>/dev/null)"
+
+if [[ -z "$active_players" ]]; then
+    echo '{"title":"No song","artist":"","position":"0:00","position_seconds":0,"length":"0:00","length_seconds":0,"progress":0,"status":"⏸","cover":""}'
+    exit 0
+fi
+
 # If called with "cover" argument, output cover path only
 if [[ "$1" == "cover" ]]; then
     handle_cover_art
     exit 0
 fi
 
-# Get metadata
-active_player="$(playerctl -l 2>/dev/null | head -n1)"
-player_cache_file="$CACHE_DIR/active_player"
-previous_player=""
+# Get metadata - use specific player if multiple exist
+title="$(playerctl metadata title 2>/dev/null)"
+artist="$(playerctl metadata artist 2>/dev/null)"
+status_raw="$(playerctl status 2>/dev/null)"
 
-# Read previous player if cache exists
-if [[ -f "$player_cache_file" ]]; then
-    previous_player="$(cat "$player_cache_file")"
+# If no title, no music is playing
+if [[ -z "$title" ]]; then
+    echo '{"title":"No song","artist":"","position":"0:00","position_seconds":0,"length":"0:00","length_seconds":0,"progress":0,"status":"⏸","cover":""}'
+    exit 0
 fi
 
-# Update cache with current player
-echo "$active_player" > "$player_cache_file"
-
-title="$(playerctl metadata title 2>/dev/null || echo "No song")"
-artist="$(playerctl metadata artist 2>/dev/null || echo "")"
-status="$(playerctl status 2>/dev/null | sed 's/Playing/󰏤/g; s/Paused/󰐊/g' || echo '⸻')"
+# Convert status to icon
+case "$status_raw" in
+    "Playing")
+        status=""  # Play icon
+        ;;
+    "Paused")
+        status=""  # Pause icon
+        ;;
+    *)
+        status=""  # Default pause
+        ;;
+esac
 
 # Get length from metadata (in microseconds)
 raw_length="$(playerctl metadata mpris:length 2>/dev/null || echo 0)"
 length=$((raw_length / 1000000))
 
-# Get position - force fresh read from current player
+# Get position
 position="$(playerctl position 2>/dev/null | awk '{printf("%d\n",$1)}' || echo 0)"
-
-# If player changed, force position refresh by not using any cached value
-if [[ "$active_player" != "$previous_player" ]] && [[ -n "$previous_player" ]]; then
-    sleep 0.1
-    position="$(playerctl position 2>/dev/null | awk '{printf("%d\n",$1)}' || echo 0)"
-fi
 
 # Validate position doesn't exceed length
 if [[ $position -gt $length ]] && [[ $length -gt 0 ]]; then
@@ -161,6 +176,7 @@ echo "{
     \"title\": \"$(escape_json "$clean_title")\",
     \"artist\": \"$(escape_json "$clean_artist")\",
     \"position\": \"$(format_time "$position")\",
+    \"position_seconds\": $position,
     \"length\": \"$(format_time "$length")\",
     \"length_seconds\": $length,
     \"progress\": $progress,

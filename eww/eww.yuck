@@ -5,24 +5,9 @@
 (defpoll volume_icon :interval "1s" :initial ""
   "bash ~/.config/eww/scripts/getvol icon")
 
-;; Poll Music Info
-(defpoll song :interval "2s" :initial "No song"
-  "playerctl metadata title 2>/dev/null || echo 'No song'")
-
-(defpoll song_status :interval "2s" :initial "󰏤"
-  "playerctl status 2>/dev/null | sed 's/Playing/󰏤/g; s/Paused/󰐊/g' || echo '⏸ '")
-
-(defpoll cover_art :interval "2s" :initial ""
-  "bash ~/.config/eww/scripts/music_info.sh cover")
-
-(defpoll song_pos :interval "500ms" :initial "0"
-  "playerctl position 2>/dev/null | cut -d. -f1 || echo '0'")
-
+;; Poll Music Info - SINGLE SOURCE OF TRUTH
 (defpoll music :interval "1s" :initial "{}"
   "bash ~/.config/eww/scripts/music_info.sh")
-
-(defpoll artist :interval "2s" :initial ""
-  "playerctl metadata artist 2>/dev/null || echo ''")
 
 ;; Poll Time and Date
 (defpoll hour :interval "1s" "date '+%H'")
@@ -39,13 +24,10 @@
     "date '+%Y'")
 
 ;; Workspace switcher
-(defpoll current_workspace :interval "500ms" :initial "1"
+(defpoll current_workspace :interval "1s" :initial "1"
   "hyprctl activeworkspace -j | jq -r '.id' 2>/dev/null || hyprctl activeworkspace | grep 'workspace ID' | awk '{print $3}'")
 
-(defpoll workspaces_list :interval "500ms" :initial "[1,2,3,4,5]"
-  "hyprctl workspaces -j | jq '[.[].id] | sort' 2>/dev/null || echo '[1,2,3,4,5,6]'")
-
-(defpoll occupied_workspaces :interval "500ms" :initial "[]"
+(defpoll occupied_workspaces :interval "1s" :initial "[]"
   "hyprctl workspaces -j | jq '[.[].id] | sort' 2>/dev/null || echo '[]'")
 
 ;; Variables
@@ -112,10 +94,10 @@
        :spacing 10
     (for workspace in "[1,2,3,4,5,6]"
       (button :class {current_workspace == workspace ? "workspace active" : 
-                     (arraylength(jq(occupied_workspaces, "map(select(. == ${workspace}))")) > 0 ? "workspace occupied" : "workspace empty")}
+                     (matches(occupied_workspaces, ".*${workspace}.*") ? "workspace occupied" : "workspace empty")}
               :onclick "hyprctl dispatch workspace ${workspace}" 
               :tooltip "Workspace ${workspace}"
-              {current_workspace == workspace ? "●" : "○}))))
+              {current_workspace == workspace ? "●" : "○"}))))
 
 ;; Music Controls
 (defwidget music-widget []
@@ -123,31 +105,31 @@
             :onhoverlost "eww update music_reveal=false"
     (box :orientation "h" :space-evenly false :class "music-container"
       (button :class "song" :onclick "~/.config/eww/scripts/popup music"
-              (label :text song :limit-width 13 :show-truncated true))
+              (label :text {music.title ?: "No song"} :limit-width 13 :show-truncated true))
       (revealer :transition "slideright" 
                 :reveal music_reveal 
                 :duration "350ms"
         (box :orientation "h" :space-evenly false :vexpand "false" :hexpand "false" :spacing 10 :class "music-controls"
           (button :class "song_btn_prev" :onclick "playerctl previous" "❮")
-          (button :class "song_btn_play" :onclick "playerctl play-pause" song_status)
+          (button :class "song_btn_play" :onclick "playerctl play-pause" {music.status ?: "󰏤"})
           (button :class "song_btn_next" :onclick "playerctl next" "❯"))))))
 
-;; Music popup
+;; Music Popup
 (defwidget music-popup []
   (box :orientation "h" :spacing 15 :class "music-popup" :space-evenly false
     ;; Cover art
     (box :class "music_cover_art" :vexpand false :hexpand false
-      :style "background-image: url('${cover_art}'); min-width: 200px; min-height: 200px; background-size: cover; background-position: center; border-radius: 6px;")
+      :style "background-image: url('${music.cover ?: ""}'); min-width: 200px; min-height: 200px; background-size: cover; background-position: center; border-radius: 6px;")
     ;; Song info & controls
     (box :orientation "v" :spacing 8 :hexpand true
       ;; Title & artist
       (box :orientation "v" :spacing 2
-        (label :text {song != "" ? song : "No music"}
+        (label :text {music.title != "" ? music.title : "No music"}
                :limit-width 25
                :show-truncated true
                :class "popup-song-title"
                :halign "center")
-        (label :text {artist != "" ? artist : ""}
+        (label :text {music.artist ?: ""}
                :limit-width 15
                :show-truncated true
                :class "popup-song-artist"
@@ -155,13 +137,13 @@
       ;; Controls
       (centerbox :orientation "h" :class "popup-controls"
         (button :onclick "playerctl previous" :class "music_btn_prev" "❮")
-        (button :onclick "playerctl play-pause" :class "music_btn_play" song_status)
+        (button :onclick "playerctl play-pause" :class "music_btn_play" {music.status ?: "󰏤"})
         (button :onclick "playerctl next" :class "music_btn_next" "❯"))
       ;; Timeline & times
       (box :orientation "v" :spacing 4 :class "timeline-container"
         (scale :min 0
-               :max {jq(music, ".length_seconds") ?: 100}
-               :value song_pos
+               :max {music.length_seconds ?: 100}
+               :value {music.position_seconds ?: 0}
                :onchange "playerctl position {}"
                :hexpand true
                :class "music-progress"
@@ -169,11 +151,11 @@
                :height 20
                :width 300)
         (box :orientation "h" :space-evenly false :class "time-labels"
-          (label :text {replace(jq(music, ".position") ?: "0:00", "\"", "")} 
+          (label :text {music.position != "" ? music.position : "0:00"} 
                  :class "current-time" 
                  :halign "start")
           (box :hexpand true)
-          (label :text {replace(jq(music, ".length") ?: "0:00", "\"", "")} 
+          (label :text {music.length != "" ? music.length : "0:00"} 
                  :class "total-time" 
                  :halign "end"))))))
 

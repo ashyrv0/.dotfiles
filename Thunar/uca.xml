@@ -4,12 +4,13 @@
 	<icon>utilities-terminal</icon>
 	<name>Open Terminal Here</name>
 	<submenu></submenu>
-	<unique-id>1756099247942953-1</unique-id>
-	<command>kitty --working-directory=%f</command>
-	<description>Opens Terminal</description>
+	<unique-id>1765785436202564-1</unique-id>
+	<command>kitty -d %f</command>
+	<description>Example for a custom action</description>
 	<range></range>
 	<patterns>*</patterns>
 	<startup-notify/>
 	<directories/>
+	<text-files/>
 </action>
 </actions>
